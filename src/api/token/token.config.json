@@ -1,0 +1,100 @@
+{
+  "mainnet-beta": [
+    {
+      "mintAddress": "SRMuApVNdxXokk5GT7XD5cUUgXMBCoAz2LHeuAoKWRt",
+      "tokenName": "Serum",
+      "tokenSymbol": "SRM"
+    },
+    {
+      "mintAddress": "MSRMcoVyrFxnSgo5uXwone5SKcGhT1KEJMFEkMEWf9L",
+      "tokenName": "MegaSerum",
+      "tokenSymbol": "MSRM"
+    },
+    {
+      "mintAddress": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+      "tokenName": "USD Coin",
+      "tokenSymbol": "USDC"
+    },
+    {
+      "mintAddress": "So11111111111111111111111111111111111111112",
+      "tokenName": "Wrapped SOL",
+      "tokenSymbol": "WSOL"
+    },
+    {
+      "mintAddress": "63PMzJsf3d4vtRh6QDJUFwiRkehC3adgiQa52bPYJKf7",
+      "tokenName": "Pool Token USDC/SOL",
+      "tokenSymbol": "USDC/SOL"
+    }
+  ],
+  "testnet": [
+    {
+      "mintAddress": "CVC84qYQMrCxNVDpC6uNGmxPxTBF4aybty9BNHZdCdqc",
+      "tokenName": "Civic",
+      "tokenSymbol": "CVC"
+    },
+    {
+      "mintAddress": "USD2gtXURuxqjjdhHtAV9hsQFixazECAz4Qdxp1muht",
+      "tokenName": "Wrapped USDC",
+      "tokenSymbol": "USDC"
+    },
+    {
+      "mintAddress": "BTCCkFPKpg9dPoyS6bhstpMX24CAxF3dV9Us5Aw1xH57",
+      "tokenName": "Wrapped BTC",
+      "tokenSymbol": "BTC"
+    },
+    {
+      "mintAddress": "ETHZ1d2B3Rn6c4evLaTg6xgiXYnUyddRAybXTpwUdtni",
+      "tokenName": "Wrapped ETH",
+      "tokenSymbol": "ETH"
+    },
+    {
+      "mintAddress": "So11111111111111111111111111111111111111112",
+      "tokenName": "Wrapped SOL",
+      "tokenSymbol": "WSOL"
+    },
+    {
+      "mintAddress": "2NtHQG7w9fa1mg5NjTfDseE3vEwytqUuc72GcBK5mWVs",
+      "tokenName": "Pool Token USDC/CVC",
+      "tokenSymbol": "USDC/CVC"
+    },
+    {
+      "mintAddress": "6axoJLdmQEPoeeFd1QpsHgUxiMnrd7GLcbGWBdNaLc1b",
+      "tokenName": "Pool Token USDC/BTC",
+      "tokenSymbol": "USDC/BTC"
+    }
+  ],
+  "devnet": [
+    {
+      "mintAddress": "HHpyfYteg2MjMBaZC6Vj43ppMKt8MUxSCxPzRaruTbpM",
+      "tokenName": "Wrapped USDC",
+      "tokenSymbol": "USDC"
+    },
+    {
+      "mintAddress": "4TJRe6gZZG3ybtjn5GPCGtQtVCG4zG5URC4t6u4ddTwM",
+      "tokenName": "Wrapped BTC",
+      "tokenSymbol": "BTC"
+    },
+    {
+      "mintAddress": "So11111111111111111111111111111111111111112",
+      "tokenName": "Wrapped SOL",
+      "tokenSymbol": "WSOL"
+    },
+    {
+      "mintAddress": "42EHuBnm11yWqKvmuqeZLjWtvVgNfzZghm4Foit2qdhJ",
+      "tokenName": "Pool Token USDC/BTC",
+      "tokenSymbol": "USDC/BTC"
+    }
+  ],
+  "localnet": [
+    {
+      "mintAddress": "CY3SLULMHu1gzyXmaGjSQXphV3U3NgA5dWivmN3P2wWj",
+      "tokenName": "Token A",
+      "tokenSymbol": "TKA"
+    },
+    {
+      "mintAddress": "MqSRFjAkrhtshnrEdC7cneYKWHEyCXiuzSy7NLWqBff",
+      "tokenName": "Token B",
+      "tokenSymbol": "TKB"
+    }
+  ]
+}

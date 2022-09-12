@@ -1,784 +1,190 @@
-Contribution: 2021-12-13 00:00
+# IdentitySwap: An On-Chain DeFi Identity Gateway
 
-Contribution: 2021-12-13 00:01
+## Summary
 
-Contribution: 2021-12-13 00:02
+IdentitySwap is an Automatic Money Market (AMM) dApp that 
+demonstrates the concept of Decentralised Identity on the 
+Solana SPL Token-Swap program. A user can interact with a 
+liquidity pool only if they are in possession of a valid 
+identity account, certified by a trusted identity validator. 
 
-Contribution: 2021-12-13 00:03
+The association of an identity account with a transaction is stored on-chain.
 
-Contribution: 2021-12-13 00:04
+## Solana Hackathon Submission
 
-Contribution: 2021-12-13 00:05
+### Repos
 
-Contribution: 2021-12-13 00:06
+The hackathon submission is made up of two repositories:
 
-Contribution: 2021-12-13 00:07
+- [IdentitySwap](https://github.com/civicteam/identity-swap): A UI for the SPL Token-Swap and Identity programs.
+- [civicteam/solana-program-library](https://github.com/civicteam/solana-program-library): A fork of the Solana SPL repository including the Identity program 
 
-Contribution: 2021-12-13 00:08
+### Demo
 
-Contribution: 2021-12-13 00:09
+See [here](https://civicteam.github.io/identity-swap/) for a demo and walkthrough.
+See [here](https://civicteam.github.io/identity-swap/faq) for an FAQ on the project.
 
-Contribution: 2021-12-14 00:00
+## Motivation
 
-Contribution: 2021-12-14 00:01
+Defi services have traditionally been anonymous/pseudonymous, 
+in that they do not require any user identification or KYC to use. 
 
-Contribution: 2021-12-14 00:02
+While in many ways this is a good thing, it leads to services 
+such as Uniswap being used for 
+[money-laundering](https://www.forbes.com/sites/pawelkuskowski/2020/09/30/kucoin-hack-is-proof-that-money-laundering-risk-with-defi-is-rising/),
+which, in turn, attracts the attention of 
+[government regulators](https://www.newsbtc.com/all/uniswaps-uni-token-plunges-as-investors-fear-a-regulatory-crackdown/). 
 
-Contribution: 2021-12-14 00:03
+Centralised exchanges that previously emphasised anonymity, 
+such as [BitMEX](https://www.coindesk.com/bitmex-accelerates-identity-verification-kyc),
+have recently integrated KYC to avoid the 
+risk of being shut down by regulators. 
 
-Contribution: 2021-12-14 00:04
+Adding KYC or Identity in any form to DEXes is a much more 
+complicated matter, however. 
 
-Contribution: 2021-12-14 00:05
+The nature of a DEX is that any attempts to impose a KYC wall 
+can be circumvented by interacting directly with the smart contracts. 
 
-Contribution: 2021-12-14 00:06
+And in the general case, on-chain identity is a concept that has 
+not yet taken hold, but has been on the horizon for
+[some years now](https://consensys.net/blockchain-use-cases/digital-identity). 
 
-Contribution: 2021-12-16 00:00
+The “identity primitives” for decentralised identity, however, 
+are relatively well established, and are being curated and 
+developed by the
+[Decentralised Identity Foundation](https://identity.foundation/).
 
-Contribution: 2021-12-20 00:00
+## Submission
 
-Contribution: 2021-12-20 00:01
+As a submission to the Solana Hackathon, we have added an identity layer to Solana,
+in the form of "Identity Accounts".
 
-Contribution: 2021-12-20 00:02
+### Identity Accounts
 
-Contribution: 2021-12-20 00:03
+Identity Accounts represent a user’s Decentralised Identity (DID) on-chain,
+and can therefore be passed as inputs into Solana programs in the same way
+as other Solana accounts.
 
-Contribution: 2021-12-20 00:04
+These accounts are managed by a new
+[Identity Program](https://github.com/civicteam/solana-program-library/tree/master/identity/program),
+which can respond to challenges from other Solana programs that have Identity requirements.
 
-Contribution: 2021-12-20 00:05
+Identity Accounts contain "attestations", which are hashes of
+off-chain Verifiable Credentials.
+Verifiable Credentials (VCs) are collections of claims about a
+user, or a "Subject", that have been signed by an Identity
+Validator (IdV), and can therefore be presented to Identity
+Requesters (IdRs) in order to meet KYC requirements, or other
+identity challenges.
 
-Contribution: 2021-12-20 00:06
+### Token-Swap Identity Gate
 
-Contribution: 2021-12-20 00:07
+The SPL Token-Swap program has been adapted to require
+a presentation of a valid identity when swapping via a liquidity pool.
 
-Contribution: 2021-12-20 00:08
+In this case, the "Subject" is the user of the liquidity pool,
+either someone wishing to swap, or deposit or withdraw liquidity.
 
-Contribution: 2021-12-20 00:09
+The Identity Requester (IdR) is the pool itself.
+This is an "on-chain”" requester, unlike the off-chain identity
+requesters such as BitMEX or other centralised exchanges or blockchain services.
 
-Contribution: 2021-12-20 00:10
+For the purposes of the hackathon, the Identity Validator is any public/private key pair.
+The public key is passed as a parameter during initialization of the liquidity pool.
 
-Contribution: 2021-12-20 00:11
+Note: users’ personal information is itself not stored on the blockchain
+as part of this project. Transactions are associated with an Identity Account,
+but the identity account by itself does not divulge the identity of the owner.
+Providing this information, for example under audit from a regulator,
+is out of scope for this project, and would be an audit requirement
+of the identity issuer, i.e. the IdV.
 
-Contribution: 2021-12-20 00:12
+## Developer Guide
 
-Contribution: 2021-12-20 00:13
+- [Getting started](#getting-started)
+- [Testing](#testing)
+  * [Unit tests](#unit-tests)
+  * [Integration tests](#integration-tests)
+  * [E2E tests](#e2e-tests)
+- [Building a production version](#building-a-production-version)
+- [Solana Scripts](#solana-scripts)
+  * [Running a local solana cluster](#running-a-local-solana-cluster)
+  * [Building the token-swap program](#building-the-token-swap-program)
 
-Contribution: 2021-12-22 00:00
+### Getting started
 
-Contribution: 2021-12-22 00:01
+Run:
 
-Contribution: 2021-12-22 00:02
+    yarn
+    yarn start
 
-Contribution: 2021-12-22 00:03
+to start the app in the development mode.
+Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
 
-Contribution: 2021-12-22 00:04
+The page will reload if you make edits.<br />
+You will also see any lint errors in the console.
 
-Contribution: 2021-12-22 00:05
+## Using the App
 
-Contribution: 2021-12-22 00:06
+1. Connect your wallet
+2. Airdrop some test tokens
+3. Register your identity
+4. Swap!
 
-Contribution: 2021-12-24 00:00
+To get test tokens, you can use the [ops scripts](/etc/ops/README.md). 
 
-Contribution: 2021-12-24 00:01
+## Testing
 
-Contribution: 2021-12-24 00:02
+### Unit tests
 
-Contribution: 2021-12-24 00:03
+Run the unit tests using:
 
-Contribution: 2021-12-24 00:04
+    yarn test:unit
+    
+### Integration tests
 
-Contribution: 2021-12-24 00:05
+Integration tests require a local solana cluster, with the token-swap program installed
+(see [Solana Scripts](#solana-scripts) below).
 
-Contribution: 2021-12-24 00:06
+Once you have the token-swap program built and deployed, run the integration tests with
 
-Contribution: 2021-12-24 00:07
+    yarn test:integration
 
-Contribution: 2021-12-24 00:08
+## Building a production version
 
-Contribution: 2021-12-24 00:09
+    yarn build
 
-Contribution: 2021-12-24 00:10
+Builds the app for production to the `build` folder.
 
-Contribution: 2021-12-24 00:11
+## Solana Scripts
 
-Contribution: 2021-12-24 00:12
+### Running a local solana cluster
 
-Contribution: 2021-12-24 00:13
+Download the latest solana docker image using:
+    
+    yarn solana:localnet:update
 
-Contribution: 2021-12-24 00:14
+Then start the solana localnet cluster
 
-Contribution: 2021-12-27 00:00
+    yarn solana:localnet:up
 
-Contribution: 2021-12-27 00:01
+### Building the Solana programs 
 
-Contribution: 2021-12-27 00:02
+Install Rust, follow the instructions here https://rustup.rs/
 
-Contribution: 2021-12-27 00:03
+Build the token-swap program
 
-Contribution: 2021-12-27 00:04
+    yarn solana:build swap
+    
+Build the identity program
 
-Contribution: 2021-12-27 00:05
+    yarn solana:build identity
 
-Contribution: 2021-12-27 00:06
+Load the token-swap program onto the cluster using
 
-Contribution: 2021-12-27 00:07
+    yarn solana:loadProgram swap
 
-Contribution: 2021-12-27 00:08
+Load the identity program onto the cluster using
 
-Contribution: 2021-12-27 00:09
-
-Contribution: 2021-12-27 00:10
-
-Contribution: 2021-12-27 00:11
-
-Contribution: 2021-12-27 00:12
-
-Contribution: 2021-12-27 00:13
-
-Contribution: 2021-12-28 00:00
-
-Contribution: 2021-12-28 00:01
-
-Contribution: 2021-12-28 00:02
-
-Contribution: 2021-12-28 00:03
-
-Contribution: 2021-12-28 00:04
-
-Contribution: 2021-12-28 00:05
-
-Contribution: 2021-12-28 00:06
-
-Contribution: 2021-12-28 00:07
-
-Contribution: 2021-12-28 00:08
-
-Contribution: 2021-12-28 00:09
-
-Contribution: 2021-12-28 00:10
-
-Contribution: 2021-12-28 00:11
-
-Contribution: 2021-12-28 00:12
-
-Contribution: 2021-12-28 00:13
-
-Contribution: 2021-12-28 00:14
-
-Contribution: 2021-12-29 00:00
-
-Contribution: 2021-12-29 00:01
-
-Contribution: 2021-12-31 00:00
-
-Contribution: 2021-12-31 00:01
-
-Contribution: 2021-12-31 00:02
-
-Contribution: 2022-01-03 00:00
-
-Contribution: 2022-01-03 00:01
-
-Contribution: 2022-01-04 00:00
-
-Contribution: 2022-01-04 00:01
-
-Contribution: 2022-01-04 00:02
-
-Contribution: 2022-01-04 00:03
-
-Contribution: 2022-01-04 00:04
-
-Contribution: 2022-01-04 00:05
-
-Contribution: 2022-01-04 00:06
-
-Contribution: 2022-01-04 00:07
-
-Contribution: 2022-01-04 00:08
-
-Contribution: 2022-01-04 00:09
-
-Contribution: 2022-01-04 00:10
-
-Contribution: 2022-01-04 00:11
-
-Contribution: 2022-01-05 00:00
-
-Contribution: 2022-01-05 00:01
-
-Contribution: 2022-01-05 00:02
-
-Contribution: 2022-01-05 00:03
-
-Contribution: 2022-01-05 00:04
-
-Contribution: 2022-01-05 00:05
-
-Contribution: 2022-01-05 00:06
-
-Contribution: 2022-01-05 00:07
-
-Contribution: 2022-01-05 00:08
-
-Contribution: 2022-01-05 00:09
-
-Contribution: 2022-01-06 00:00
-
-Contribution: 2022-01-06 00:01
-
-Contribution: 2022-01-06 00:02
-
-Contribution: 2022-01-07 00:00
-
-Contribution: 2022-01-07 00:01
-
-Contribution: 2022-01-07 00:02
-
-Contribution: 2022-01-07 00:03
-
-Contribution: 2022-01-07 00:04
-
-Contribution: 2022-01-07 00:05
-
-Contribution: 2022-01-07 00:06
-
-Contribution: 2022-01-11 00:00
-
-Contribution: 2022-01-11 00:01
-
-Contribution: 2022-01-11 00:02
-
-Contribution: 2022-01-11 00:03
-
-Contribution: 2022-01-11 00:04
-
-Contribution: 2022-01-11 00:05
-
-Contribution: 2022-01-11 00:06
-
-Contribution: 2022-01-11 00:07
-
-Contribution: 2022-01-11 00:08
-
-Contribution: 2022-01-11 00:09
-
-Contribution: 2022-01-11 00:10
-
-Contribution: 2022-01-11 00:11
-
-Contribution: 2022-01-11 00:12
-
-Contribution: 2022-01-11 00:13
-
-Contribution: 2022-01-11 00:14
-
-Contribution: 2022-01-12 00:00
-
-Contribution: 2022-01-12 00:01
-
-Contribution: 2022-01-12 00:02
-
-Contribution: 2022-01-12 00:03
-
-Contribution: 2022-01-12 00:04
-
-Contribution: 2022-01-14 00:00
-
-Contribution: 2022-01-14 00:01
-
-Contribution: 2022-01-14 00:02
-
-Contribution: 2022-01-14 00:03
-
-Contribution: 2022-01-17 00:00
-
-Contribution: 2022-01-17 00:01
-
-Contribution: 2022-01-18 00:00
-
-Contribution: 2022-01-18 00:01
-
-Contribution: 2022-01-18 00:02
-
-Contribution: 2022-01-18 00:03
-
-Contribution: 2022-01-18 00:04
-
-Contribution: 2022-01-18 00:05
-
-Contribution: 2022-01-18 00:06
-
-Contribution: 2022-01-18 00:07
-
-Contribution: 2022-01-18 00:08
-
-Contribution: 2022-01-18 00:09
-
-Contribution: 2022-01-19 00:00
-
-Contribution: 2022-01-19 00:01
-
-Contribution: 2022-01-19 00:02
-
-Contribution: 2022-01-19 00:03
-
-Contribution: 2022-01-19 00:04
-
-Contribution: 2022-01-19 00:05
-
-Contribution: 2022-01-21 00:00
-
-Contribution: 2022-01-21 00:01
-
-Contribution: 2022-01-21 00:02
-
-Contribution: 2022-01-21 00:03
-
-Contribution: 2022-01-21 00:04
-
-Contribution: 2022-01-21 00:05
-
-Contribution: 2022-01-25 00:00
-
-Contribution: 2022-01-25 00:01
-
-Contribution: 2022-01-25 00:02
-
-Contribution: 2022-01-26 00:00
-
-Contribution: 2022-01-26 00:01
-
-Contribution: 2022-01-26 00:02
-
-Contribution: 2022-01-26 00:03
-
-Contribution: 2022-01-26 00:04
-
-Contribution: 2022-01-26 00:05
-
-Contribution: 2022-01-26 00:06
-
-Contribution: 2022-01-26 00:07
-
-Contribution: 2022-01-26 00:08
-
-Contribution: 2022-01-26 00:09
-
-Contribution: 2022-01-27 00:00
-
-Contribution: 2022-01-27 00:01
-
-Contribution: 2022-01-27 00:02
-
-Contribution: 2022-01-27 00:03
-
-Contribution: 2022-01-27 00:04
-
-Contribution: 2022-01-27 00:05
-
-Contribution: 2022-01-27 00:06
-
-Contribution: 2022-01-27 00:07
-
-Contribution: 2022-01-27 00:08
-
-Contribution: 2022-01-28 00:00
-
-Contribution: 2022-01-28 00:01
-
-Contribution: 2022-01-28 00:02
-
-Contribution: 2022-01-28 00:03
-
-Contribution: 2022-01-31 00:00
-
-Contribution: 2022-01-31 00:01
-
-Contribution: 2022-01-31 00:02
-
-Contribution: 2022-01-31 00:03
-
-Contribution: 2022-01-31 00:04
-
-Contribution: 2022-01-31 00:05
-
-Contribution: 2022-01-31 00:06
-
-Contribution: 2022-01-31 00:07
-
-Contribution: 2022-01-31 00:08
-
-Contribution: 2022-01-31 00:09
-
-Contribution: 2022-01-31 00:10
-
-Contribution: 2022-01-31 00:11
-
-Contribution: 2022-02-01 00:00
-
-Contribution: 2022-02-04 00:00
-
-Contribution: 2022-02-04 00:01
-
-Contribution: 2022-02-04 00:02
-
-Contribution: 2022-02-04 00:03
-
-Contribution: 2022-02-14 00:00
-
-Contribution: 2022-02-16 00:00
-
-Contribution: 2022-02-16 00:01
-
-Contribution: 2022-02-16 00:02
-
-Contribution: 2022-02-16 00:03
-
-Contribution: 2022-02-17 00:00
-
-Contribution: 2022-02-17 00:01
-
-Contribution: 2022-02-17 00:02
-
-Contribution: 2022-02-17 00:03
-
-Contribution: 2022-02-17 00:04
-
-Contribution: 2022-02-17 00:05
-
-Contribution: 2022-02-17 00:06
-
-Contribution: 2022-02-17 00:07
-
-Contribution: 2022-02-17 00:08
-
-Contribution: 2022-02-18 00:00
-
-Contribution: 2022-02-18 00:01
-
-Contribution: 2022-02-18 00:02
-
-Contribution: 2022-02-21 00:00
-
-Contribution: 2022-02-21 00:01
-
-Contribution: 2022-02-21 00:02
-
-Contribution: 2022-02-21 00:03
-
-Contribution: 2022-02-21 00:04
-
-Contribution: 2022-02-21 00:05
-
-Contribution: 2022-02-21 00:06
-
-Contribution: 2022-02-21 00:07
-
-Contribution: 2022-02-22 00:00
-
-Contribution: 2022-02-22 00:01
-
-Contribution: 2022-02-22 00:02
-
-Contribution: 2022-02-22 00:03
-
-Contribution: 2022-02-22 00:04
-
-Contribution: 2022-02-22 00:05
-
-Contribution: 2022-02-22 00:06
-
-Contribution: 2022-02-22 00:07
-
-Contribution: 2022-02-22 00:08
-
-Contribution: 2022-02-22 00:09
-
-Contribution: 2022-02-24 00:00
-
-Contribution: 2022-02-24 00:01
-
-Contribution: 2022-02-24 00:02
-
-Contribution: 2022-02-24 00:03
-
-Contribution: 2022-02-24 00:04
-
-Contribution: 2022-02-24 00:05
-
-Contribution: 2022-02-24 00:06
-
-Contribution: 2022-02-24 00:07
-
-Contribution: 2022-02-24 00:08
-
-Contribution: 2022-02-25 00:00
-
-Contribution: 2022-02-25 00:01
-
-Contribution: 2022-02-25 00:02
-
-Contribution: 2022-02-25 00:03
-
-Contribution: 2022-02-25 00:04
-
-Contribution: 2022-02-25 00:05
-
-Contribution: 2022-02-28 00:00
-
-Contribution: 2022-02-28 00:01
-
-Contribution: 2022-02-28 00:02
-
-Contribution: 2022-02-28 00:03
-
-Contribution: 2022-02-28 00:04
-
-Contribution: 2022-02-28 00:05
-
-Contribution: 2022-02-28 00:06
-
-Contribution: 2022-02-28 00:07
-
-Contribution: 2022-03-03 00:00
-
-Contribution: 2022-03-03 00:01
-
-Contribution: 2022-03-03 00:02
-
-Contribution: 2022-03-03 00:03
-
-Contribution: 2022-03-03 00:04
-
-Contribution: 2022-03-03 00:05
-
-Contribution: 2022-03-03 00:06
-
-Contribution: 2022-03-03 00:07
-
-Contribution: 2022-03-03 00:08
-
-Contribution: 2022-03-03 00:09
-
-Contribution: 2022-03-03 00:10
-
-Contribution: 2022-03-08 00:00
-
-Contribution: 2022-03-09 00:00
-
-Contribution: 2022-03-09 00:01
-
-Contribution: 2022-03-09 00:02
-
-Contribution: 2022-03-09 00:03
-
-Contribution: 2022-03-09 00:04
-
-Contribution: 2022-03-15 00:00
-
-Contribution: 2022-03-15 00:01
-
-Contribution: 2022-03-15 00:02
-
-Contribution: 2022-03-15 00:03
-
-Contribution: 2022-03-15 00:04
-
-Contribution: 2022-03-15 00:05
-
-Contribution: 2022-03-16 00:00
-
-Contribution: 2022-03-16 00:01
-
-Contribution: 2022-03-16 00:02
-
-Contribution: 2022-03-16 00:03
-
-Contribution: 2022-03-16 00:04
-
-Contribution: 2022-03-16 00:05
-
-Contribution: 2022-03-16 00:06
-
-Contribution: 2022-03-16 00:07
-
-Contribution: 2022-03-16 00:08
-
-Contribution: 2022-03-17 00:00
-
-Contribution: 2022-03-17 00:01
-
-Contribution: 2022-03-17 00:02
-
-Contribution: 2022-03-17 00:03
-
-Contribution: 2022-03-17 00:04
-
-Contribution: 2022-03-17 00:05
-
-Contribution: 2022-03-17 00:06
-
-Contribution: 2022-03-17 00:07
-
-Contribution: 2022-03-17 00:08
-
-Contribution: 2022-03-17 00:09
-
-Contribution: 2022-03-17 00:10
-
-Contribution: 2022-03-23 00:00
-
-Contribution: 2022-03-23 00:01
-
-Contribution: 2022-03-23 00:02
-
-Contribution: 2022-03-23 00:03
-
-Contribution: 2022-03-23 00:04
-
-Contribution: 2022-03-23 00:05
-
-Contribution: 2022-03-23 00:06
-
-Contribution: 2022-03-23 00:07
-
-Contribution: 2022-03-23 00:08
-
-Contribution: 2022-03-24 00:00
-
-Contribution: 2022-03-24 00:01
-
-Contribution: 2022-03-24 00:02
-
-Contribution: 2022-03-24 00:03
-
-Contribution: 2022-03-24 00:04
-
-Contribution: 2022-03-24 00:05
-
-Contribution: 2022-03-24 00:06
-
-Contribution: 2022-03-24 00:07
-
-Contribution: 2022-03-24 00:08
-
-Contribution: 2022-03-24 00:09
-
-Contribution: 2022-03-24 00:10
-
-Contribution: 2022-03-24 00:11
-
-Contribution: 2022-03-24 00:12
-
-Contribution: 2022-03-25 00:00
-
-Contribution: 2022-03-25 00:01
-
-Contribution: 2022-03-25 00:02
-
-Contribution: 2022-03-25 00:03
-
-Contribution: 2022-03-25 00:04
-
-Contribution: 2022-03-25 00:05
-
-Contribution: 2022-03-25 00:06
-
-Contribution: 2022-03-25 00:07
-
-Contribution: 2022-03-25 00:08
-
-Contribution: 2022-03-30 00:00
-
-Contribution: 2022-03-30 00:01
-
-Contribution: 2022-03-30 00:02
-
-Contribution: 2022-03-30 00:03
-
-Contribution: 2022-03-30 00:04
-
-Contribution: 2022-03-30 00:05
-
-Contribution: 2022-03-30 00:06
-
-Contribution: 2022-03-30 00:07
-
-Contribution: 2022-03-30 00:08
-
-Contribution: 2022-03-30 00:09
-
-Contribution: 2022-03-30 00:10
-
-Contribution: 2022-03-30 00:11
-
-Contribution: 2022-03-30 00:12
-
-Contribution: 2022-03-30 00:13
-
-Contribution: 2022-04-01 00:00
-
-Contribution: 2022-04-01 00:01
-
-Contribution: 2022-04-01 00:02
-
-Contribution: 2022-04-01 00:03
-
-Contribution: 2022-04-01 00:04
-
-Contribution: 2022-04-01 00:05
-
-Contribution: 2022-04-01 00:06
-
-Contribution: 2022-04-01 00:07
-
-Contribution: 2022-04-01 00:08
-
-Contribution: 2022-04-01 00:09
-
-Contribution: 2022-04-01 00:10
-
-Contribution: 2022-04-04 00:00
-
-Contribution: 2022-04-04 00:01
-
-Contribution: 2022-04-05 00:00
-
-Contribution: 2022-04-05 00:01
-
-Contribution: 2022-04-05 00:02
-
-Contribution: 2022-04-05 00:03
-
-Contribution: 2022-04-05 00:04
-
-Contribution: 2022-04-05 00:05
-
-Contribution: 2022-04-05 00:06
-
-Contribution: 2022-04-06 00:00
-
-Contribution: 2022-04-06 00:01
-
-Contribution: 2022-04-06 00:02
-
-Contribution: 2022-04-06 00:03
-
-Contribution: 2022-04-06 00:04
-
-Contribution: 2022-04-06 00:05
-
-Contribution: 2022-04-06 00:06
-
-Contribution: 2022-04-06 00:07
-
-Contribution: 2022-04-06 00:08
-
-Contribution: 2022-04-07 00:00
-
-Contribution: 2022-04-07 00:01
-
-Contribution: 2022-04-07 00:02
-
-Contribution: 2022-04-07 00:03
-
+    yarn solana:loadProgram identity

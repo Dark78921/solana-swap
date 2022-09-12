@@ -1,0 +1,307 @@
+version: 2.1
+
+defaults:
+  - &features
+    filters:
+      branches:
+        ignore: master
+  - &on-develop
+    filters:
+      branches:
+        only:
+          - develop
+  - &on-master
+    filters:
+      branches:
+        only:
+          - master
+  - &on-release
+    filters:
+      branches:
+        ignore: /.*/ # ignore any non-tagged commit on any branch by default
+      tags:
+          only: /^\d+\.\d+\.\d+$/ # only run on tags of the type x.x.x
+  - &restore_cache
+    restore_cache:
+      name: Restore Yarn Package Cache
+      keys:
+        - yarn-packages-{{ checksum "yarn.lock" }}
+  - &save_cache
+    save_cache:
+      name: Save Yarn Package Cache
+      key: yarn-packages-{{ checksum "yarn.lock" }}
+      paths:
+        - ~/.cache/yarn
+
+orbs:
+  slack: circleci/slack@3.4.2
+
+executors:
+  default:
+    docker:
+      - image: cimg/node:14.13
+  rust:
+    docker:
+      - image: cimg/rust:1.46.0-node
+  machine:
+    machine:
+      image: ubuntu-2004:202010-01
+  cypress:
+    docker:
+      - image: cypress/base:10
+        environment:
+          TERM: xterm
+
+commands:
+  init:
+    steps:
+      - checkout
+      - *restore_cache
+      - run:
+          name: Install Dependencies
+          command: yarn install --immutable
+      - *save_cache
+
+  install_node:
+    steps:
+      - run:
+          name: Install Node
+          command: sudo snap install --classic node
+      - run:
+          name: Install Yarn
+          command: |
+            curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | sudo apt-key add -
+            echo "deb https://dl.yarnpkg.com/debian/ stable main" | sudo tee /etc/apt/sources.list.d/yarn.list
+            sudo apt update
+            sudo apt install yarn
+
+  # used to install rust and solana on a circleci machine executor
+  install-solana:
+    steps:
+      - run:
+          name: Install rust
+          command: curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | bash -s -- -y
+      - run:
+          name: Install solana
+          command: sh -c "$(curl -sSfL https://release.solana.com/v1.4.3/install)"
+
+  load-program:
+    steps:
+      # - run: yarn solana:getLatestProgram
+      ## TODO Temp while identity branch is using a different program version to develop/master
+      - install-solana
+      - run:
+          name: Build programs
+          command: |
+            source $HOME/.cargo/env
+            export PATH="/home/circleci/.local/share/solana/install/active_release/bin:$PATH"
+            yarn solana:build:swap
+            yarn solana:build:identity
+      - run:
+          name: Load programs
+          command: |
+            source $HOME/.cargo/env
+            export PATH="/home/circleci/.local/share/solana/install/active_release/bin:$PATH"
+            yarn solana:loadProgram:swap
+            yarn solana:loadProgram:identity
+
+  deploy:
+    parameters:
+      stage:
+        type: string
+        default: "dev"
+    steps:
+      - init
+      - run:
+          name: Build
+          command: |
+            STAGE=<< parameters.stage >> yarn build
+            STAGE=<< parameters.stage >> yarn deploy
+
+
+jobs:
+  test:
+    executor: default
+    steps:
+      - init
+      - run:
+          name: Lint
+          command: yarn lint
+      - run:
+          name: Unit test
+          command: yarn test:unit
+      - slack/notify-on-failure:
+          only_for_branches: develop,master
+
+  compileSolanaPrograms:
+    executor: rust
+    environment:
+      SPL_DIRECTORY: ~/project/node_modules/solana-program-library
+    steps:
+      - init
+      - run: sh -c "$(curl -sSfL https://release.solana.com/v1.4.3/install)"
+      - run:
+          name: Compile SPF
+          command: yarn solana:build
+      - slack/notify-on-failure
+      - store_artifacts:
+          path: ~/project/node_modules/solana-program-library/target/bpfel-unknown-unknown/release/spl_token_swap.so
+      - persist_to_workspace:
+          root: ./
+          paths:
+            - ./
+
+  integration:
+    executor: machine
+    environment:
+      SPL_DIRECTORY: ~/project/node_modules/solana-program-library
+    steps:
+      - attach_workspace:
+          at: ./
+      - install_node
+      - init
+      - run:
+          name: Run Solana localnet
+          command: |
+            yarn solana:localnet:update
+            yarn solana:localnet:up
+      - load-program
+      - run:
+          name: Integration tests
+          command: yarn test:integration
+      - slack/notify-on-failure:
+          only_for_branches: develop,master
+  e2e:
+    executor: cypress
+    steps:
+      - init
+      - run:
+          name: Install Cypress dependencies
+          command: |
+            cd test/e2e
+            yarn install --immutable
+      - run:
+          name: Start server
+          command: |
+            cd test/e2e
+            yarn start-app-no-tty
+          background: true
+      - run:
+          name: Wait on dependencies
+          command: |
+            cd test/e2e
+            yarn wait-on http://localhost:3000
+          no_output_timeout: 30m
+      - run:
+          name: Run e2e tests
+          command: |
+            cd test/e2e
+            yarn test --reporter junit
+          no_output_timeout: 30m
+      - slack/notify-on-failure:
+          only_for_branches: develop,master
+      - store_test_results:
+          path: test/e2e/junit-results
+      - store_artifacts:
+          path: test/e2e/cypress/videos
+      - store_artifacts:
+          path: test/e2e/cypress/screenshots
+
+  deployDev:
+    executor: default
+    steps:
+      - deploy:
+          stage: dev
+
+  deployPreprod:
+    executor: default
+    steps:
+      - deploy:
+          stage: preprod
+
+  deployProd:
+    executor: default
+    steps:
+      - deploy:
+          stage: prod
+
+workflows:
+  version: 2
+
+  nightly:
+    triggers:
+      - schedule:
+          # run at 2am UTC
+          cron: "0 2 * * *"
+          filters:
+            branches:
+              only:
+                - master
+    jobs:
+      - compileSolanaPrograms:
+          context: Development
+
+  build:
+    jobs:
+      - test:
+          context: Development
+          <<: *features
+      - integration:
+          context: Development
+          <<: *features
+#      - e2e:
+#          context: Development
+#          <<: *features
+      - deployDev:
+          context: Development
+          <<: *on-develop
+          requires:
+            - test
+            - integration
+#            - e2e
+
+  preprod:
+    jobs:
+      - test:
+          context: Development
+          <<: *on-master
+      - integration:
+          context: Development
+          <<: *on-master
+#      - e2e:
+#          context: Development
+#          <<: *on-master
+      - deployPreprod:
+          context: Development
+          requires:
+            - test
+            - integration
+#            - e2e
+
+  prod:
+    jobs:
+      - test:
+          context: Development
+          <<: *on-release
+      - integration:
+          context: Development
+          <<: *on-release
+#      - e2e:
+#          context: Development
+#          <<: *on-release
+      - slack/approval-notification:
+          <<: *on-release
+          requires:
+            - test
+            - integration
+#            - e2e
+      - hold-before-prod-deploy:
+          <<: *on-release
+          type: approval
+          requires:
+            - slack/approval-notification
+      - deployProd:
+          context: Production
+          <<: *on-release
+          requires:
+            - hold-before-prod-deploy
